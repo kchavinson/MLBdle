@@ -9,6 +9,7 @@ public class Player {
     private final int rbi;
     private final double avg;
 
+    // Declare instance variables for players
     public Player(String name, String team, String position, int season, String bats,
                   double war, int hr, int rbi, double avg) {
         this.name = name;
@@ -22,7 +23,7 @@ public class Player {
         this.avg = avg;
     }
 
-
+    // Getters
     public String getName() {
         return name;
     }

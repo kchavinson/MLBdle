@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.BufferedReader;
@@ -5,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class MLBdle {
+
+    // Instance Variables
     private MLBdleView window;
     Scanner input = new Scanner(System.in);
     public ArrayList<Player> players;
@@ -20,9 +23,14 @@ public class MLBdle {
 
     public MLBdle(String csvFilePath)
     {
+        // Create Players Arraylist
         players = new ArrayList<Player>();
         loadPlayers(csvFilePath);
+
+        // Randomly select the correct player
         correctPlayer = players.get((int) (Math.random() * NUM_PLAYERS));
+
+        // Declare Instance Variables
         playerHasBeenGuessed = false;
         numGuesses = 0;
         this.window = new MLBdleView(this);
@@ -30,69 +38,64 @@ public class MLBdle {
         window.repaint();
     }
 
-    private void loadPlayers(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line = reader.readLine(); // skip header
-            while ((line = reader.readLine()) != null) {
-                String[] tokens = line.split(",");
-                if (tokens.length < 9) continue;
-                String name = tokens[0].trim();
-                String team = tokens[1].trim();
-                String position = tokens[2].trim();
-                int season = Integer.parseInt(tokens[3].trim());
-                String bats = tokens[4].trim();
-                double war = Double.parseDouble(tokens[5].trim());
-                int hr = Integer.parseInt(tokens[6].trim());
-                int rbi = Integer.parseInt(tokens[7].trim());
-                double avg = Double.parseDouble(tokens[8].trim());
+    private void loadPlayers(String filePath)
+    {
+        // Create a BufferedReader object which can read in the CSV given the filepath
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath)))
+        {
+            // Skip the first line in the CSV
+            String line = reader.readLine();
+
+            // Create Player objects out of the data from the subsequent lines
+            while ((line = reader.readLine()) != null)
+            {
+                String[] stats = line.split(",");
+                if (stats.length < DATA_ROWS) continue;
+                String name = stats[0].trim();
+                String team = stats[1].trim();
+                String position = stats[2].trim();
+                int season = Integer.parseInt(stats[3].trim());
+                String bats = stats[4].trim();
+                double war = Double.parseDouble(stats[5].trim());
+                int hr = Integer.parseInt(stats[6].trim());
+                int rbi = Integer.parseInt(stats[7].trim());
+                double avg = Double.parseDouble(stats[8].trim());
 
                 players.add(new Player(name, team, position, season, bats, war, hr, rbi, avg));
             }
-        } catch (IOException e) {
+        }
+        // Ensure that there are no errors in the data
+        catch (IOException e) {
             System.err.println("Error reading CSV file: " + e.getMessage());
         }
     }
 
-    public ArrayList<Player> getPlayers()
-    {
-        return players;
-    }
-
-
-    public void guessPlayer() {
-        System.out.println("Please guess a player:");
-        String playerName = input.nextLine();
-
+    // If the player is found in the arraylist of players, then update the window accordingly
+    public void makeGuess(String playerName) {
         for (Player player : players) {
-            if (player.getName().equals(playerName)) {  // Ignore case differences
+            if (player.getName().equalsIgnoreCase(playerName)) {
                 this.playerGuessed = player;
+                this.comparePlayers();
+                window.readInData(playerGuessed, squareColors);
+                numGuesses++;
+                window.repaint();
+
+                // If correct player has been guessed, then change to has won to true
+                if (playerGuessed.getName().equals(correctPlayer.getName())) {
+                    playerHasBeenGuessed = true;
+                }
                 return;
             }
         }
 
-        // If we finish the for loop without finding a match
-        System.out.println("That's incorrect, please try again.");
-        guessPlayer();
+        // If player not found, show error message
+        JOptionPane.showMessageDialog(window, "Player not found. Please try again.");
     }
 
-    public void play()
-    {
-
-        while (!playerHasBeenGuessed && numGuesses < 8)
-        {
-            this.guessPlayer();
-            this.comparePlayers();
-            window.readInData(playerGuessed, squareColors);
-            numGuesses++;
-            window.repaint();
-        }
-        window.repaint();
-
-    }
-
+    // Compare the data of the correct player to the guessed player to modify the square colors
     public void comparePlayers()
     {
-        // Column 0: Name
+        // Compare Player Names
         if (playerGuessed.getName().equals(correctPlayer.getName()))
         {
             for (int i = 0; i < DATA_ROWS; i++)
@@ -103,21 +106,21 @@ public class MLBdle {
             return;
         }
 
-        // Column 1: Team
+        // Compare player Teams
         if (playerGuessed.getTeam().getTeamName().equals(correctPlayer.getTeam().getTeamName())) {
             squareColors[numGuesses][1] = "green";
         } else if (this.teamsAreClose(playerGuessed.getTeam(), correctPlayer.getTeam())) {
             squareColors[numGuesses][1] = "yellow";
         }
 
-        // Column 2: Position
+        // Compare player Positions
         if (playerGuessed.getPosition().getPlayerPosition().equals(correctPlayer.getPosition().getPlayerPosition())) {
             squareColors[numGuesses][2] = "green";
         } else if (this.closePositions(playerGuessed.getPosition(), correctPlayer.getPosition())) {
             squareColors[numGuesses][2] = "yellow";
         }
 
-        // Column 3: Rookie Season
+        // Compare player Rookie Seasons
         int gSeason = playerGuessed.getSeason();
         int cSeason = correctPlayer.getSeason();
         if (gSeason == cSeason) {
@@ -126,12 +129,12 @@ public class MLBdle {
             squareColors[numGuesses][3] = "yellow";
         }
 
-        // Column 4: Bats
+        // Compare player Bats
         if (playerGuessed.getBats().equals(correctPlayer.getBats())) {
             squareColors[numGuesses][4] = "green";
         }
 
-        // Column 5: WAR
+        // Compare player WARs
         double gWar = playerGuessed.getWar();
         double cWar = correctPlayer.getWar();
         if (Math.abs(gWar - cWar) < 0.1) {
@@ -140,7 +143,7 @@ public class MLBdle {
             squareColors[numGuesses][5] = "yellow";
         }
 
-        // Column 6: HR
+        // Compare player HRs
         int gHr = playerGuessed.getHr();
         int cHr = correctPlayer.getHr();
         if (gHr == cHr) {
@@ -149,7 +152,7 @@ public class MLBdle {
             squareColors[numGuesses][6] = "yellow";
         }
 
-        // Column 7: RBI
+        // Compare player RBIs
         int gRbi = playerGuessed.getRbi();
         int cRbi = correctPlayer.getRbi();
         if (gRbi == cRbi) {
@@ -158,7 +161,7 @@ public class MLBdle {
             squareColors[numGuesses][7] = "yellow";
         }
 
-        // Column 8: AVG
+        // Compare player AVGs
         double gAvg = playerGuessed.getAvg();
         double cAvg = correctPlayer.getAvg();
         if (Math.abs(gAvg - cAvg) < 0.001) {
@@ -168,15 +171,19 @@ public class MLBdle {
         }
     }
 
+    // Checks if teams are either in the same direction or in the same league
     public boolean teamsAreClose(Team guess, Team answer)
     {
         return guess.getDirection().equals(answer.getDirection()) || guess.getLeague().equals(answer.getLeague());
     }
+
+    // Checks if the positions are both infield or outfield
     public boolean closePositions(Position guess, Position answer)
     {
         return guess.getField().equals(answer.getField());
     }
 
+    // Getters
     public boolean isPlayerHasBeenGuessed() {
         return playerHasBeenGuessed;
     }
@@ -185,17 +192,12 @@ public class MLBdle {
         return correctPlayer;
     }
 
-    public String[][] getSquareColors() {
-        return squareColors;
-    }
-
+    // Start game by creating MLBdle object
     public static void main(String[] args)
     {
-        // Creates dice game object
-        MLBdle game1 = new MLBdle("/Users/kchavinson/IdeaProjects/Weddle/Data/MLBDLE_PLAYER_DATA_ALPHABETICAL.csv");
+        MLBdle game1 =
+                new MLBdle("/Users/kchavinson/IdeaProjects/Weddle/Data/MLBDLE_PLAYER_DATA_ALPHABETICAL.csv");
 
-        // Runs through game
-        game1.play();
     }
 
 }

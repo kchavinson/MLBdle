@@ -4,11 +4,13 @@ public class Position {
     private String position;
     private String field;
 
+    // Declare instance variables
     public Position(String position) {
         this.position = position;
         this.field = this.findField(position);
     }
 
+    // Determine whether position is infield or outfield
     public String findField(String position)
     {
         for (String pos: infieldPositions)
@@ -21,6 +23,7 @@ public class Position {
         return "OF";
     }
 
+    // Getters
     public String getPlayerPosition() {
         return position;
     }

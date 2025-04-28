@@ -1,11 +1,13 @@
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.JTextField;
 
 public class MLBdleView extends JFrame {
     private MLBdle backend;
     private String[][] playerData;
     private String[][] squareColors;
     private int numGuesses;
+    private JTextField guessField;
 
     private final int DATA_ROWS = 9;
     private final int MAX_GUESSES = 8;
@@ -15,7 +17,8 @@ public class MLBdleView extends JFrame {
 
     private final int WINDOW_WIDTH = 1600;
     private final int WINDOW_HEIGHT = 1000;
-    private final int RULES_OFFSET = 100;
+    private final int BOX_OFFSET = 100;
+    private final int RULES_OFFSET = 60;
     private final int HEADER_OFFSET = 150;
     private final int RECT_HIEGHT = 80;
     private final int RECT_WIDTH = 150;
@@ -32,11 +35,26 @@ public class MLBdleView extends JFrame {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setTitle("MLBdle");
         this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        this.setLayout(null);
         this.setVisible(true);
+        guessField = new JTextField();
 
+        // Set size and location of text field
+        guessField.setBounds(1200, 850, 200, 30);
+
+        // Add textfield to the window
+        this.add(guessField);
+
+        // Allow pressing "Enter" to submit string to guess method
+        guessField.addActionListener(e -> {
+            String guess = guessField.getText();
+            backend.makeGuess(guess);
+            guessField.setText("");
+        });
     }
 
 
+    // Read in data to squareColors and playerData to use to draw squares
     public void readInData(Player guess, String[][] squareColors) {
         this.squareColors = squareColors;
         playerData[numGuesses][0] = guess.getName();
@@ -53,15 +71,20 @@ public class MLBdleView extends JFrame {
 
 
     public void paint(Graphics g) {
+        // Reset the screen and draw instructions
         g.setColor(Color.GRAY);
         g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.drawString("MLBdle", MID_POINT, RULES_OFFSET);
+        g.drawString("MLBdle", MID_POINT, BOX_OFFSET);
+        g.setFont(new Font("Arial", Font.BOLD, 14));
+        g.drawString("Welcome to MLBdle: You have 8 Guesses to find the random MLB PLayer",
+                X_OFFSET, RULES_OFFSET);
 
+       // Draw Square for each instance variable of the player
         for (int i = 0; i < numGuesses; i++) {
             for (int j = 0; j < DATA_ROWS; j++) {
-                // Set color based on closeness
+                // Draw color of square based on squareColors array
                 if (squareColors[i][j] == null) {
                     g.setColor(Color.LIGHT_GRAY);
                 } else if (squareColors[i][j].equals("green")) {
@@ -70,9 +93,9 @@ public class MLBdleView extends JFrame {
                     g.setColor(Color.YELLOW);
                 }
 
-                // Draw colored rectangle
+                // Fill in colored rectangle
                 int x = X_OFFSET * (j + 1);
-                int y = RULES_OFFSET + Y_OFFSET * (i + 1);
+                int y = BOX_OFFSET + Y_OFFSET * (i + 1);
                 g.fillRect(x, y, RECT_WIDTH, RECT_HIEGHT);
 
                 // Draw black border
@@ -86,12 +109,16 @@ public class MLBdleView extends JFrame {
             }
 
         }
+
+        // If the correct player has been guessed, tell user they won
         if (backend.isPlayerHasBeenGuessed()) {
             g.setColor(Color.GREEN);
             g.setFont(new Font("Arial", Font.BOLD, 20));
             g.drawString("YOU WIN: The player was " + backend.getCorrectPlayer().getName(),
                     X_OFFSET, Y_OFFSET * (numGuesses + 1) + HEADER_OFFSET);
         }
+
+        // If the user has run out of guesses, tell the user they lost and who the correct player is
         if (numGuesses == MAX_GUESSES)
         {
             g.setColor(Color.RED);
