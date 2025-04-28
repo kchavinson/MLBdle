@@ -1,17 +1,10 @@
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
 public class MLBdle {
-
-
     private MLBdleView window;
     Scanner input = new Scanner(System.in);
     public ArrayList<Player> players;
@@ -204,6 +197,5 @@ public class MLBdle {
         // Runs through game
         game1.play();
     }
-
 
 }

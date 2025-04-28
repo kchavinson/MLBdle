@@ -37,8 +37,6 @@ public class MLBdleView extends JFrame {
     }
 
 
-
-
     public void readInData(Player guess, String[][] squareColors) {
         this.squareColors = squareColors;
         playerData[numGuesses][0] = guess.getName();
@@ -55,7 +53,7 @@ public class MLBdleView extends JFrame {
 
 
     public void paint(Graphics g) {
-        g.setColor(Color.WHITE);
+        g.setColor(Color.GRAY);
         g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 20));
@@ -65,7 +63,7 @@ public class MLBdleView extends JFrame {
             for (int j = 0; j < DATA_ROWS; j++) {
                 // Set color based on closeness
                 if (squareColors[i][j] == null) {
-                    g.setColor(Color.WHITE);
+                    g.setColor(Color.LIGHT_GRAY);
                 } else if (squareColors[i][j].equals("green")) {
                     g.setColor(Color.GREEN);
                 } else {
@@ -82,7 +80,6 @@ public class MLBdleView extends JFrame {
                 g.drawRect(x, y, RECT_WIDTH, RECT_HIEGHT);
 
                 // Draw the player data inside the rectangle
-
                 g.setFont(new Font("Arial", Font.BOLD, 12));
                 g.drawString(playerData[i][j], x + 10, y + 45);
                 g.drawString(rowHeaders[j], x + 10, HEADER_OFFSET);
